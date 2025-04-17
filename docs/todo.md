@@ -1,5 +1,5 @@
 Tôi muốn xây dựng 1 app multi-tenant để tạo ra cấu trúc của dự án nextjs bằng AI
-Use case cụ thể là 1 multi-tenant ticket app
+Use case cụ thể là 1 multi-tenant ticket app có tên là TicketFast
 
 Các bước setup
 
