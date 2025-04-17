@@ -1,8 +1,30 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { LoginForm } from "@/components/login-form";
 
 export default function SuperAdminLoginPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // const formData = new FormData(e.currentTarget);
+    // const email = formData.get("email") as string;
+    // const password = formData.get("password") as string;
+
+    try {
+      router.push("/super-admin/dashboard");
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -16,7 +38,7 @@ export default function SuperAdminLoginPage() {
           </p>
         </div>
 
-        <LoginForm />
+        <LoginForm onSubmit={handleSubmit} isLoading={isLoading} />
 
         <div className="mt-4 text-center text-sm text-gray-600">
           <p>

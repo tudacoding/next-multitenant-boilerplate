@@ -10,12 +10,19 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+interface LoginFormProps {
+  className?: string
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
+  isLoading?: boolean
+}
+
 export function LoginForm({
   className,
-  ...props
-}: React.ComponentProps<"div">) {
+  onSubmit,
+  isLoading = false,
+}: LoginFormProps) {
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-6", className)}>
       <Card>
         <CardHeader className="text-center">
           <CardTitle>Đăng nhập vào tài khoản của bạn</CardTitle>
@@ -24,15 +31,17 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={onSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="m@example.com"
                   required
+                  disabled={isLoading}
                 />
               </div>
               <div className="grid gap-3">
@@ -45,13 +54,19 @@ export function LoginForm({
                     Quên mật khẩu?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input 
+                  id="password" 
+                  name="password"
+                  type="password" 
+                  required 
+                  disabled={isLoading}
+                />
               </div>
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  Đăng nhập
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" disabled={isLoading}>
                   Đăng nhập với Google
                 </Button>
               </div>
