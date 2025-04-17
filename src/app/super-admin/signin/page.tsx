@@ -12,11 +12,9 @@ export default function SuperAdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // const formData = new FormData(e.currentTarget);
-    // const email = formData.get("email") as string;
-    // const password = formData.get("password") as string;
-
     try {
+      // TODO: Thêm logic đăng nhập thực tế
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       router.push("/super-admin/dashboard");
     } catch (error) {
       console.error(error);
