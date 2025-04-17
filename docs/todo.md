@@ -1,0 +1,33 @@
+Tôi muốn xây dựng 1 app multi-tenant để tạo ra cấu trúc của dự án nextjs bằng AI
+Use case cụ thể là 1 multi-tenant ticket app
+
+Các bước setup
+
+- [x] eslint + prettier
+- [x] Style đã sử dụng tailwind css + shadcn ✅
+- [x] Setup github và kết nối với vercel ✅
+- [x] ci/cd khi deploy lên nhánh master, lập tức cập nhật ở production
+- [x] Nextjs app router
+- [x] alias path @/
+- [x] setup layout (index page và admin page)
+
+- [] Thiết kế multi-tenant
+- [] call-api data flow (interceptor, canceling ...) react-query (Quản lý và cache API, sync toàn cục, tự động refetch)
+- [] store (zustand) (Quản lý tốt các state local (UI elements, form, ...), state không liên quan đến API)
+- [] Chia components và modules UI
+
+- [] graphQL
+- [] authentication + Oauth (clerk)
+- [] Setup .env development và .env production (trong đó có api-endpoint)
+- [] Image loader (caching, preload, cdn)
+- [] Plugin (loading, alert, confirm dialog)
+- [] helpers, utils
+
+- [] form + input rules (tanstack form)
+- [] theme (darkmode, storybook)
+- [] multiple language
+- [] Code corverage
+- [] Unit test
+- [] Sentry là công cụ quản lý lỗi và giám sát ứng dụng
+- [] Setup cursor rules + MCP sử dụng AI Agent
+- [] PostHog công cụ phân tích sản phẩm, theo dõi hành vi user
