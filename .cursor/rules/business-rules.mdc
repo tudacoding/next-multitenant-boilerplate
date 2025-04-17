@@ -1,0 +1,86 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Business Logic for Multi-Tenant Ticketing App
+
+## 1. Tenant Definition
+- Each tenant represents a unique client (event organizer).
+- Every tenant is isolated in terms of data, authentication, and access control.
+- Each tenant has two separate interfaces: `admin` and `sale`.
+
+## 2. Admin Page (Per Tenant)
+- Accessible only by authenticated users of the tenant.
+- Allows tenant users to create, update, and delete events.
+- Allows configuration of ticket types, prices, and quantity for each event.
+- Provides a dashboard to view sales reports, ticket redemption, and event status.
+- Supports user management: invite, role assignment (e.g., Admin, Staff).
+- All actions within admin must be scoped to the tenant’s `tenantId`.
+
+## 3. Sale Page (Per Tenant)
+- Public-facing page for customers to view and buy tickets.
+- Displays all published events for the specific tenant.
+- Customers can select event, ticket type, quantity, and proceed to checkout.
+- Supports custom branding (logo, theme) configured per tenant.
+- Each purchase is associated with the correct `tenantId` and `eventId`.
+
+## 4. Routing Logic
+- Each tenant’s `admin` page is accessible at: `admin.{tenant-subdomain}.yourdomain.com`
+- Each tenant’s `sale` page is accessible at: `{tenant-subdomain}.yourdomain.com`
+- Alternative (for path-based routing):
+  - Admin: `/[tenant]/admin`
+  - Sale: `/[tenant]`
+
+## 5. Authentication & Authorization
+- Only authenticated users of a tenant can access the admin page.
+- Sale pages are publicly accessible unless restricted by event settings.
+- JWT tokens must include `tenantId`, `userId`, and `role`.
+- Role-based access controls must be enforced on admin actions.
+
+## 6. Data Isolation
+- All records (events, tickets, purchases, users) must include `tenantId`.
+- No cross-tenant data access is allowed under any circumstance.
+- Queries and mutations must validate `tenantId` context before executing.
+
+## 7. Customization Per Tenant
+- Tenants can set branding settings: logo, primary color, header/footer content.
+- Sale page renders using tenant-specific branding and settings.
+- Admin page branding is optional but can include logo for familiarity.
+
+## 8. Event Management Rules
+- Events must have a unique `slug` or `id` scoped within the tenant.
+- Events can be marked as draft or published.
+- Published events appear on the sale page; draft events are hidden.
+
+## 9. Ticket Management Rules
+- Each event can have multiple ticket types.
+- Tickets must include name, description, price, max quantity.
+- Tickets can be disabled or sold out, based on admin control or limits reached.
+
+## 10. Checkout and Orders
+- Customers buying tickets must provide name, email, and quantity.
+- Each order is linked to `tenantId`, `eventId`, and a timestamp.
+- Duplicate or invalid ticket orders must be prevented (e.g., over-purchase, expired events).
+
+## 11. Scalability
+- System must support creation and management of unlimited tenants.
+- Each tenant operates in logical isolation with no impact on others.
+- Admin and Sale apps are tenant-aware and resolve context based on routing and headers.
+
+## 12. Analytics and Reporting
+- Admin users can view statistics: total sales, tickets sold, attendees.
+- Reports are filtered by event and date, always scoped to `tenantId`.
+
+## 13. Access Audit and Logs
+- Admin actions (event creation, ticket updates, user invites) must be logged.
+- Logs are visible to tenant Admins for transparency.
+
+## 14. Account Lifecycle
+- Tenants can be created via a sign-up flow or manually by the platform owner.
+- Tenants can be deactivated, which disables both admin and sale access.
+- Tenants may be assigned plans (e.g., free, premium) with limitations applied accordingly.
+
+## 15. Platform Owner Access
+- Super Admin (platform-level) can access all tenants for support and moderation.
+- Super Admin actions are not visible to tenant users unless explicitly shared.

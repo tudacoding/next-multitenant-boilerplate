@@ -1,0 +1,134 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Cursor Rules – Back-End Development for Multi-Tenant Ticketing App
+
+## Tech Stack
+- Framework: NestJS (TypeScript)
+- Database: Supabase (PostgreSQL + RLS)
+- Auth: Supabase Auth (JWT)
+- ORM: Supabase client + Prisma (optional hybrid)
+- Deployment: Supabase Edge Functions / Vercel / Railway
+
+---
+
+## 1. Multi-Tenant Architecture
+- Every table must include a `tenant_id` column for strict tenant data separation.
+- All business logic and database queries must scope by `tenant_id`.
+- No cross-tenant access is allowed at any time.
+
+---
+
+## 2. Supabase Database Design
+
+### Schema Structure
+- Use a **single schema** (public) with shared tables across all tenants.
+- Required columns for all tenant-aware tables:
+  - `tenant_id` (UUID, FK to tenants table)
+  - `created_at`, `updated_at`
+  - Soft delete fields if needed: `deleted_at`
+
+### Tables Overview
+- `tenants`: stores metadata and config for each tenant
+- `users`: linked to Supabase Auth, includes `tenant_id`, `role`
+- `events`: each row belongs to one tenant
+- `tickets`: linked to `events`, include `ticket_type`, `price`, `quantity`
+- `orders`: store customer purchases (linked to tenant + event + ticket)
+
+### Row Level Security (RLS)
+- RLS must be enabled on all tenant-scoped tables.
+- Policies must enforce:
+  - Select / Insert / Update / Delete based on `auth.uid()` and `tenant_id`
+- Example RLS policy:
+  ```sql
+  USING (tenant_id = current_setting('request.tenant_id', true)::uuid)
+  ```
+
+### Supabase JWT
+- Tokens must include `tenant_id`, `role`, and `user_id` in JWT claims.
+- JWT claims are used to inject PostgreSQL session settings:
+  - `request.tenant_id`
+  - `request.user_id`
+  - `request.role`
+
+---
+
+## 3. NestJS Design Patterns
+
+### Modules Structure
+- Use modular structure: `auth`, `tenants`, `events`, `tickets`, `orders`, `users`
+- Each module includes: `controller`, `service`, `dto`, `guard`, `interceptor`
+
+### Guards & Middleware
+- Implement a `TenantGuard` to extract and validate `tenant_id` from the JWT or subdomain.
+- Implement `RolesGuard` to enforce RBAC (Admin, Staff, Customer).
+- Middleware must inject `tenant_id` into request context.
+
+### DTOs & Validation
+- All DTOs must include `tenant_id` where required.
+- Use `class-validator` and `class-transformer` for input validation.
+
+---
+
+## 4. Security Rules
+
+### General
+- Never trust client-provided `tenant_id`. Always derive from JWT or subdomain.
+- Use Supabase RLS as primary enforcement for data access.
+- Sanitize all inputs at controller level.
+
+### Admin vs Public Access
+- Admin endpoints require authenticated + tenant-scoped users (e.g. `Admin`, `Staff`).
+- Public endpoints (sale site) may allow unauthenticated access for viewing published events only.
+- Orders from guests must still be scoped to a specific tenant via subdomain or URL param.
+
+---
+
+## 5. Tenant Context Resolution
+
+### Strategy 1: Subdomain Based
+- Extract tenant subdomain from the request hostname in middleware.
+- Resolve `tenant_id` from `tenants` table and store in request context.
+
+### Strategy 2: Path Based
+- Use first path segment `/[tenant]` to resolve tenant from URL.
+
+---
+
+## 6. Deployment & Environment
+
+### Supabase
+- Use Supabase for Auth, DB, Storage, and RLS enforcement.
+- Use Edge Functions or NestJS API as backend.
+
+### NestJS
+- Deployed via Vercel / Railway / Render.
+- `.env` must support multiple tenants dynamically if needed.
+- Use `@nestjs/config` for environment handling.
+
+---
+
+## 7. Logging & Monitoring
+- Log all critical operations: user login, ticket creation, orders, admin updates.
+- Tag all logs with `tenant_id` for tracking.
+- Use tools like Sentry, Datadog, or Supabase logs for monitoring.
+
+---
+
+## 8. Auditing & Metrics
+- Optional: Maintain an `audit_logs` table for sensitive changes (event updates, ticket changes).
+- Store `action`, `user_id`, `tenant_id`, `timestamp`, `payload`.
+
+---
+
+## 9. Performance & Scalability
+- Design indexes on `tenant_id`, `event_id`, and frequently queried fields.
+- Avoid cross-table joins unless scoped with `tenant_id`.
+
+---
+
+## 10. Super Admin Access (Platform Owner)
+- Super Admin accounts can access any tenant’s data for support/moderation.
+- Use a separate role in JWT (e.g. `platform_admin`) and bypass RLS where needed (controlled functions only).
