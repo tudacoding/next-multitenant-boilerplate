@@ -9,13 +9,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { ThemeToggle } from "@/components/theme-toogle";
 
 export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <ThemeToggle />
       <section className="relative h-[600px] bg-gradient-to-r from-amber-500 to-orange-500">
         <div className="absolute inset-0 opacity-20">
           <Image
